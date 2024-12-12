@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2023 Mandiant, Inc. All rights reserved.
+# Copyright (C) 2016-2024 Mandiant, Inc. All rights reserved.
 
 import os
 import platform
@@ -16,6 +16,7 @@ requirements = [
     "pyftpdlib",
     "cryptography",
     "pyopenssl",
+    "jinja2",
 ]
 
 if platform.system() == 'Windows':
@@ -25,7 +26,7 @@ elif platform.system().lower().startswith('linux'):
 
 setup(
     name='FakeNet NG',
-    version='3.0',
+    version='3.3',
     description="",
     long_description="",
     author="Mandiant FLARE Team with credit to Peter Kacherginsky as the original developer",
@@ -36,8 +37,9 @@ setup(
     ],
     package_dir={'fakenet': 'fakenet'},
     package_data={'fakenet': ['*.pem','diverters/*.py', 'listeners/*.py',
-        'listeners/ssl_utils/*.py', 'configs/*.crt', 'configs/*.key',
-        'configs/*.ini', 'defaultFiles/*', 'lib/64/*', 'lib/32/*']},
+        'listeners/ssl_utils/*.py', 'listeners/ssl_utils/*.pem', 'configs/*.ini',
+        'configs/html_report_template.html', 'defaultFiles/*', 'lib/64/*', 'lib/32/*',
+        'configs/*.crt', 'configs/*.key']},
     entry_points={
         "console_scripts": [
             "fakenet=fakenet.fakenet:main",

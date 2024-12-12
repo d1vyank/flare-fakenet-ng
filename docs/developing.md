@@ -181,8 +181,9 @@ utilities (i.e. `pip`). Use an administrative command prompt where applicable
 for installing Python modules for all users.
 
 Pre-requisites:
-* Python 3.12 x86 with `pip`
-* Microsoft C++ [Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
+* Python 3.10.11 x86 with `pip`
+* Visual C++ for Python development, available at:
+  <https://visualstudio.microsoft.com/visual-cpp-build-tools/>
 
 Before installing `pyinstaller`, you may wish to take the following steps to
 prevent the error `ImportError: No module named PyInstaller`:
@@ -198,10 +199,11 @@ Install FakeNet-NG to acquire most modules:
 python setup.py install
 ```
 
-Obtain PyDivert:
+Obtain PyDivert 2.0.9, the only version known to work with FakeNet-NG releases
+prepared with PyInstaller:
 
 ```
-pip install pydivert
+pip install pydivert==2.0.9
 ```
 
 Install `pyinstaller`:
@@ -243,6 +245,7 @@ fakenet1.4.3\
     |   +-- CustomProviderExample.py
     |   +-- sample_custom_response.ini
     |   +-- sample_raw_response.txt
+    |   +-- html_report_template.html
     |
     +-- defaultFiles\
     |   +-- FakeNet.gif
@@ -257,7 +260,7 @@ fakenet1.4.3\
     |
     +-- listeners\
         +-- ssl_utils
-    		+-- __init__.py
+    		+-- __init__.pyc
     		+-- privkey.pem
     		+-- server.pem
     		+-- ssl_detector.py

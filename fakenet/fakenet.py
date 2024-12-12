@@ -64,7 +64,7 @@ class Fakenet(object):
     def parse_config(self, config_filename):
         # Handling Pyinstaller bundle scenario: https://pyinstaller.org/en/stable/runtime-information.html
         if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-            dir_path = os.getcwd()
+            dir_path = os.path.dirname(sys.executable)
         else:
             dir_path = os.path.dirname(__file__)
 
@@ -206,6 +206,10 @@ class Fakenet(object):
                     (platform_name))
                 sys.exit(1)
 
+        # Import DiverterListenerCallbacks
+        from fakenet.diverters.diverterbase import DiverterListenerCallbacks
+        self.diverterListenerCallbacks = DiverterListenerCallbacks(self.diverter)
+
         # Start all of the listeners
         for listener_name in self.listeners_config:
 
@@ -264,6 +268,13 @@ class Fakenet(object):
                 listener.acceptDiverter(self.diverter)
             except AttributeError:
                 self.logger.debug("acceptDiverter() not implemented by Listener %s" % listener.name)
+
+            # Only listeners that implement acceptDiverterListenerCallbacks(diverterListenerCallbacks)
+            # interface receive diverterListenerCallbacks
+            try:
+                listener.acceptDiverterListenerCallbacks(self.diverterListenerCallbacks)
+            except AttributeError:
+                self.logger.debug("acceptDiverterListenerCallbacks() not implemented by Listener %s" % listener.name)
 
     def stop(self):
 
@@ -338,7 +349,7 @@ def main():
  | | / ____ \| . \| |____| |\  | |____   | |      | |\  | |__| |
  |_|/_/    \_\_|\_\______|_| \_|______|  |_|      |_| \_|\_____|
 
-                        Version 3.0 (alpha)
+                        Version 3.3
   _____________________________________________________________
                    Developed by FLARE Team
     Copyright (C) 2016-2024 Mandiant, Inc. All rights reserved.

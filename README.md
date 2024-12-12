@@ -7,7 +7,7 @@
 
            D   O   C   U   M   E   N   T   A   T   I   O   N
 
-FakeNet-NG 3.0 (alpha) is a next generation dynamic network analysis tool for malware
+FakeNet-NG 3.3 is a next generation dynamic network analysis tool for malware
 analysts and penetration testers. It is open source and designed for the latest
 versions of Windows (and Linux, for certain modes of operation). FakeNet-NG is
 based on the excellent Fakenet tool developed by Andrew Honig and Michael
@@ -52,23 +52,20 @@ Installation on Linux requires the following dependencies:
  * libnetfilterqueue development files (e.g. libnetfilter-queue-dev for
    Ubuntu).
 
-To install these dependencies, use the following command:
+Install these dependencies using the following command:
 
     sudo apt-get install build-essential python-dev libnetfilter-queue-dev
 
-Either install FakeNet-NG as a Python module using pip:
+Install FakeNet-NG as a Python module using pip:
 
     pip install https://github.com/mandiant/flare-fakenet-ng/zipball/master
 
-Or, by obtaining the latest source code and installing it manually:
+Or by obtaining the latest source code and installing it manually:
 
     git clone https://github.com/mandiant/flare-fakenet-ng/
 
-Next, install Microsoft C++ Build Tools from [here](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
-
 Change directory to the downloaded flare-fakenet-ng and run:
 
-    pip install setuptools
     python setup.py install
 
 Execute FakeNet-NG by running 'fakenet' in any directory.
@@ -80,31 +77,30 @@ Finally if you would like to avoid installing FakeNet-NG and just want to run it
 as-is (e.g. for development), then you would need to obtain the source code and
 install dependencies as follows:
 
-1) Install 64-bit or 32-bit Python 3.12 for the 64-bit or 32-bit versions
+1) Install 64-bit or 32-bit Python 3.10.11 for the 64-bit or 32-bit versions
    of Windows respectively.
 
 2) Install Python dependencies:
-    ```
-    pip install pydivert dnslib dpkt pyopenssl pyftpdlib netifaces
-    ```
+
+    pip install pydivert dnslib dpkt pyopenssl pyftpdlib netifaces jinja2
+
    *NOTE*: pydivert will also download and install WinDivert library and
    driver in the `%PYTHONHOME%\DLLs` directory. FakeNet-NG bundles those
    files so they are not necessary for normal use.
 
    Optionally, you can install the following module used for testing:
-    ```
+
     pip install requests
-    ```
 
 3) Download the FakeNet-NG source code:
 
     git clone https://github.com/mandiant/flare-fakenet-ng
 
-4) Execute FakeNet-NG by running it with a Python interpreter in a privileged
+Execute FakeNet-NG by running it with a Python interpreter in a privileged
 shell:
-    ```
+
     python -m fakenet.fakenet
-    ```
+
 Usage
 =====
 
@@ -120,10 +116,10 @@ parameter to get simple help:
      | | / ____ \| . \| |____| |\  | |____   | |      | |\  | |__| |
      |_|/_/    \_\_|\_\______|_| \_|______|  |_|      |_| \_|\_____|
 
-                             Version  3.0 (alpha)
+                             Version  3.2
       _____________________________________________________________
                        Developed by FLARE Team
-        Copyright (C) 2016-2023 Mandiant, Inc. All rights reserved.
+        Copyright (C) 2016-2024 Mandiant, Inc. All rights reserved.
       _____________________________________________________________
     Usage: python -m fakenet.fakenet [options]:
 
@@ -175,10 +171,10 @@ and an HTTP connection:
      | | / ____ \| . \| |____| |\  | |____   | |      | |\  | |__| |
      |_|/_/    \_\_|\_\______|_| \_|______|  |_|      |_| \_|\_____|
 
-                             Version  3.0 (alpha)
+                             Version  3.2
       _____________________________________________________________
                        Developed by FLARE Team
-        Copyright (C) 2016-2022 Mandiant, Inc. All rights reserved.
+        Copyright (C) 2016-2024 Mandiant, Inc. All rights reserved.
       _____________________________________________________________
 
     07/06/16 10:20:52 PM [           FakeNet] Loaded configuration file: configs/default.ini
@@ -250,13 +246,49 @@ logs will be labeled with the name set in the configuration file:
 
     07/06/16 10:21:03 PM [        DNS Server] Received A request for domain 'evil.com'.
 
-To stop FakeNet-NG and close out the generated PCAP file simply press `CTRL-C`:
+To stop FakeNet-NG and save the generated PCAP file and HTML report to disk simply press `CTRL-C`:
 
     07/06/16 10:21:41 PM [           FakeNet] Stopping...
     07/06/16 10:21:42 PM [    HTTPListener80] Stopping...
     07/06/16 10:21:42 PM [   HTTPListener443] Stopping...
     07/06/16 10:21:42 PM [      SMTPListener] Stopping...
     07/06/16 10:21:43 PM [          Diverter] Stopping...
+	07/06/16 10:21:43 PM [          Diverter] Generated new HTML report: report_20160607_102143.html
+
+User Interface
+--------------
+
+With each session of FakeNet-NG, an HTML report containing the Network-Based Indicators (NBIs) captured throughout the session is generated. Upon termination of FakeNet by pressing `CTRL-C`, this HTML file will be saved to the root directory of FakeNet. A user can review the NBIs by viewing this HTML file in a browser such as Chrome or Firefox.
+
+The HTML report serves as an interactive Graphical User Interface (GUI) that presents the NBI summary in a user-friendly manner. It includes various features to select, filter, and copy NBIs, making network analysis easier. The UI organizes all NBIs based on their process information and then further categorizes them by the application layer or transport layer protocol they use.
+
+#### NBI Summary Table
+The information in the NBI summary table is presented in a tabular format and includes the following details:
+
+ * Select: Clicking on the checkbox selects the corresponding NBI. You can select multiple NBIs across different or the same protocols. The entire row can also be selected by clicking anywhere within the row. Selected NBIs can be copied using the "Copy Selected NBIs" button.
+
+ * NBI: This cell represents the actual captured NBI. It includes commands, parameters, URIs, and other significant activity generated by the client against the listener. This cell summarizes malware behavior for better understanding.
+
+ * Additional Information: This cell provides extra information about each NBI request such as the transport layer protocol used, destination IP, port, and SSL encryption.
+
+ * Actions: This cell allows you to perform actions on individual NBIs. Currently, only copying is supported. Clicking the copy button copies the specific NBI cell data in a markdown format suitable for creating reports.
+
+#### Interactive Features
+The UI also includes various interactive features:
+
+ * Checkbox Selection: Checkboxes are available before each process and protocol block. Ticking a checkbox selects all NBIs under that process or protocol. This is useful when you want to select all NBIs from a particular process or protocol. You can then use the `Copy Selected NBIs` button to copy the selected data.
+
+ * Search Bar: The search bar lets you type keywords, and only the rows containing these keywords in the process name, NBI, or additional information will be displayed in the HTML page. You can then use the "Copy Filtered Data" button to copy the displayed data in markdown format. Clearing the search query restores the original table view.
+
+ * Copy Buttons:
+
+	 * `Copy Selected Data`: Copies all the selected NBIs in markdown format. You can select individual NBIs or all NBIs under a process by ticking checkboxes.
+	 * `Copy Filtered Data`: Copies the filtered NBIs' data in markdown format. If no search query is used, this button copies the entire data.
+	 * `Copy All NBIs`: Copies all the NBIs in markdown format present in the HTML page. Even if a filter is applied, clicking this button copies all NBIs.
+
+ * Disclaimer Button: Displays the disclaimer, which outlines important facts for the user to consider before making assumptions about the displayed NBI summary.
+
+ * Go To Top Button: Appears when the page's content exceeds the viewable area. Clicking this button takes you to the top of the page, where you can access important buttons like `Copy Selected NBIs`,` Copy All NBIs`, `Copy Filtered NBIs`, and the search bar.
 
 Configuration
 -------------
@@ -701,6 +733,15 @@ plugins and extend existing functionality. For details, see
 
 Known Issues
 ============
+
+[WinError 87] The parameter is incorrect
+----------------------------------------
+As of this wriring, the default buffer size in pydivert is 1500. If FakeNet-NG
+encounters a packet larger than the default buffer size, you may observe this error.
+A workaround is to specify the desired buffer size in self.handle.recv(bufsize=<your_bufsize>)
+in fakenet/diverters/windows.
+See [here](https://github.com/ffalcinelli/pydivert/issues/42#issuecomment-495036124)
+
 
 Does not work on VMWare with host-only mode enabled
 ---------------------------------------------------

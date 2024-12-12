@@ -108,6 +108,9 @@ class ProxyListener(object):
     def acceptDiverter(self, diverter):
         self.server.diverter = diverter
 
+    def acceptDiverterListenerCallbacks(self, diverterListenerCallbacks):
+        self.server.diverterListenerCallbacks = diverterListenerCallbacks
+
 class ThreadedTCPClientSocket(threading.Thread):
 
 
@@ -122,10 +125,20 @@ class ThreadedTCPClientSocket(threading.Thread):
         self.logger = log
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+    def connect(self):
+        try:
+            self.sock.connect((self.ip, self.port))
+            new_sport = self.sock.getsockname()[1]
+            return new_sport
+
+        except Exception as e:
+            self.logger.debug('Listener socket exception while attempting connection %s' % e)
+
+        return None
+
     def run(self):
 
         try:
-            self.sock.connect((self.ip, self.port))
             while True:
                 readable, writable, exceptional = select.select([self.sock],
                         [], [], .001)
@@ -191,15 +204,21 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
         except Exception as e:
             self.server.logger.warning('recv() error: %s' % e)
+        
+        # Is the pkt ssl encrypted?
+        # Using a str here instead of bool to match the format returned by
+        # configs of other listeners
+        is_ssl_encrypted = 'No'
 
         if data:
             if ssl_detector.looks_like_ssl(data):
+                is_ssl_encrypted = 'Yes'
+                self.server.logger.debug('SSL detected')
                 ssl_remote_sock = self.server.sslwrapper.wrap_socket(remote_sock)
                 data = ssl_remote_sock.recv(BUF_SZ)
 
             else:
                 ssl_remote_sock = None
-            
             
             orig_src_ip = self.client_address[0]
             orig_src_port = self.client_address[1]
@@ -214,6 +233,13 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 listener_sock = ThreadedTCPClientSocket(self.server.local_ip,
                         top_listener.port, listener_q, remote_q,
                         self.server.config, self.server.logger)
+
+                # Get proxy initiated source port and report to diverter
+                new_sport = listener_sock.connect()
+                if new_sport:
+                    self.server.diverterListenerCallbacks.mapProxySportToOrigSport('TCP',
+                            orig_src_port, new_sport, is_ssl_encrypted)
+
                 listener_sock.daemon = True
                 listener_sock.start()
                 remote_sock.setblocking(0)
@@ -278,6 +304,12 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 sock.bind((self.server.local_ip, 0))
+
+                # Get proxy initiated source port and report to diverter
+                new_sport = sock.getsockname()[1]
+                if new_sport:
+                    self.server.diverterListenerCallbacks.mapProxySportToOrigSport('UDP',
+                            orig_src_port, new_sport, 'No')
 
                 sock.sendto(data, (self.server.local_ip, int(top_listener.port)))
                 reply = sock.recv(BUF_SZ)

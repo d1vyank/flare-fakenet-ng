@@ -30,5 +30,14 @@ Homan developed the original concept of using a protocol "taste" callback to
 sample traffic and direct clients to the appropriate server ports. Matthew
 Haigh, Michael Bailey, and Peter Kacherginsky conceptualized the Proxy Listener
 and Hidden Listener mechanisms for introducing both of these content-based
-protocol detection features to FakeNet-NG. Matthew Haigh then implemented
-Content-Based Protocol Detection.
+protocol detection features to FakeNet-NG. Matthew Haigh then [implemented
+Content-Based Protocol
+Detection](https://www.mandiant.com/content/fireeye-www/en_US/blog/threat-research/2017/10/fakenet-content-based-protocol-detection.html).
+
+## HTML- and Text-Based NBI After-Reporting
+
+Google Summer of Code contributor Beleswar Prasad (@3V3RYONE) worked with
+mentor Tina Johnson (@tinajohnson) to add HTML- and text-based reporting of
+network-based indicators (NBIs) to FakeNet-NG, requiring significant work
+throughout the codebase to facilitate the necessary communication and tracking
+between components.

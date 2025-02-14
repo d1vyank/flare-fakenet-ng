@@ -136,6 +136,7 @@ class Fakenet(object):
         return listeners_config_expanded
 
     def start(self):
+        fn_addr = '0.0.0.0'
 
         if self.fakenet_config.get('diverttraffic') and self.fakenet_config['diverttraffic'].lower() == 'yes':
 
@@ -155,7 +156,6 @@ class Fakenet(object):
             ip_addrs = dict()
             ip_addrs[4] = iface_ip_info.get_ips([4])
             ip_addrs[6] = iface_ip_info.get_ips([6])
-            fn_addr = '0.0.0.0'
 
             if platform_name == 'Windows':
 
